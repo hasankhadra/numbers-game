@@ -9,7 +9,7 @@ import { Game, Guess } from '../types/database';
 import GameStatus from '../components/GameStatus';
 import { generateNextGuess } from '../utils/bruteForceGuesser';
 
-type Opponent = 'ai' | 'computer' | 'practice';
+type Opponent = 'ai' | 'computer' | 'practice' | 'multiplayer';
 
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
@@ -192,14 +192,7 @@ export default function Home() {
               Choose Your Mode
             </h2>
             <div className="space-y-4">
-              <button
-                onClick={() => setOpponent('ai')}
-                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium py-4 px-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-md hover:shadow-lg"
-              >
-                Play Against AI
-                <p className="text-sm opacity-80 mt-1">Strategic opponent that learns from feedback</p>
-              </button>
-              <button
+            <button
                 onClick={() => setOpponent('computer')}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-medium py-4 px-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-md hover:shadow-lg"
               >
@@ -212,6 +205,28 @@ export default function Home() {
               >
                 Practice Mode
                 <p className="text-sm opacity-80 mt-1">Play solo and try to guess the computer&apos;s number</p>
+              </button>
+              <button
+                onClick={() => setOpponent('ai')}
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium py-4 px-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-md hover:shadow-lg"
+              >
+                <div className="absolute -top-3 right-3 bg-orange-500 text-xs px-2 py-1 rounded-full animate-pulse">
+                  Experimental
+                </div>
+                Play Against AI
+                <p className="text-sm opacity-80 mt-1">Strategic opponent that learns from feedback</p>
+              </button>
+              
+              
+              <button
+                onClick={() => {}}
+                className="relative w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white font-medium py-4 px-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-md hover:shadow-lg opacity-80"
+              >
+                <div className="absolute -top-3 right-3 bg-blue-500 text-xs px-2 py-1 rounded-full animate-pulse">
+                  Coming Soon
+                </div>
+                Play Against Friends
+                <p className="text-sm opacity-80 mt-1">Challenge your friends in real-time matches</p>
               </button>
             </div>
           </div>
