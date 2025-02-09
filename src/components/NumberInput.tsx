@@ -80,7 +80,7 @@ export default function NumberInput({ onComplete, disabled = false, showSubmit =
               disabled={disabled}
               className={`w-14 h-14 text-center text-2xl font-mono border-2 rounded-lg 
                 ${disabled 
-                  ? 'bg-gray-100 border-gray-200 text-gray-400' 
+                  ? 'bg-gray-900/50 border-gray-700 text-gray-500' 
                   : 'border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-gray-900'
                 } 
                 transition-all duration-200 outline-none`}
@@ -97,7 +97,7 @@ export default function NumberInput({ onComplete, disabled = false, showSubmit =
           disabled={disabled || digits.some(d => d === '') || new Set(digits).size !== 4}
           className={`w-full p-3 rounded-lg text-white font-medium text-lg transition-all transform hover:scale-[1.02] 
             ${disabled || digits.some(d => d === '') || new Set(digits).size !== 4
-              ? 'bg-gray-300 cursor-not-allowed'
+              ? 'bg-gray-900/50 border border-gray-800 text-gray-500 cursor-not-allowed'
               : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg'
             }`}
         >
