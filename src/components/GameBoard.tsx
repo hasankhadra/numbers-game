@@ -11,6 +11,7 @@ interface GameBoardProps {
   aiSecret?: string;
   onNewGame?: () => void;
   userSecret: string;
+  isPracticeMode?: boolean;
 }
 
 export default function GameBoard({ 
@@ -20,7 +21,8 @@ export default function GameBoard({
   winner, 
   aiSecret,
   onNewGame,
-  userSecret
+  userSecret,
+  isPracticeMode
 }: GameBoardProps) {
   const [error, setError] = useState('');
 
@@ -116,7 +118,7 @@ export default function GameBoard({
         </div>
       ) : (
         <>
-          <div className="mb-6">
+          {!gameStatus === 'completed' && !isPracticeMode && (
             <div 
               className={`text-center p-3 rounded-lg mb-2 transition-all duration-300 ${
                 isUserTurn 
@@ -140,7 +142,9 @@ export default function GameBoard({
                 </span>
               )}
             </div>
-            
+          )}
+          
+          {!isPracticeMode && (
             <div className="flex items-center justify-center gap-2 mt-2 p-2 rounded-lg bg-blue-900/20 border border-blue-500/10">
               <span className="text-sm text-blue-300">Your Number:</span>
               <div className="flex gap-1">
@@ -154,7 +158,7 @@ export default function GameBoard({
                 ))}
               </div>
             </div>
-          </div>
+          )}
           <div className="space-y-4">
             <NumberInput 
               onComplete={handleComplete}

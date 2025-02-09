@@ -9,7 +9,7 @@ import { Game, Guess } from '../types/database';
 import GameStatus from '../components/GameStatus';
 import { generateNextGuess } from '../utils/bruteForceGuesser';
 
-type Opponent = 'ai' | 'computer';
+type Opponent = 'ai' | 'computer' | 'practice';
 
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
@@ -24,21 +24,21 @@ export default function Home() {
   }, [game])
 
   const startNewGame = async () => {
-    if (!userSecret || !isValidGuess(userSecret)) {
+    if (opponent !== 'practice' && (!userSecret || !isValidGuess(userSecret))) {
       alert('Please enter a valid 4-digit secret number');
       return;
     }
 
     setIsLoading(true);
     const aiSecret = generateSecretNumber();
-    const userId = Math.random().toString(36).substring(7); // Simple random ID for demo
+    const userId = Math.random().toString(36).substring(7);
 
     const { data: gameData, error: gameError } = await supabase
       .from('games')
       .insert([
         {
           user_id: userId,
-          user_secret: userSecret,
+          user_secret: '0000', // Dummy number since we don't need it for practice mode
           ai_secret: aiSecret,
           current_turn: 'user',
         },
@@ -189,7 +189,7 @@ export default function Home() {
         {!opponent ? (
           <div className="game-card w-full max-w-md mx-auto p-8 rounded-xl shadow-lg space-y-6">
             <h2 className="text-2xl font-semibold text-blue-100 mb-4">
-              Choose Your Opponent
+              Choose Your Mode
             </h2>
             <div className="space-y-4">
               <button
@@ -206,31 +206,44 @@ export default function Home() {
                 Play Against Computer
                 <p className="text-sm opacity-80 mt-1">Systematic opponent that tries all possibilities</p>
               </button>
+              <button
+                onClick={() => setOpponent('practice')}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium py-4 px-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-md hover:shadow-lg"
+              >
+                Practice Mode
+                <p className="text-sm opacity-80 mt-1">Play solo and try to guess the computer&apos;s number</p>
+              </button>
             </div>
           </div>
         ) : !game ? (
           <div className="game-card w-full max-w-md mx-auto p-8 rounded-xl shadow-lg space-y-6">
             <h2 className="text-2xl font-semibold text-blue-100 mb-4">
-              Start New Game
+              {opponent === 'practice' ? 'Ready to Play?' : 'Start New Game'}
             </h2>
             <div className="space-y-4">
-              <div>
-                <label htmlFor="secret" className="block text-sm font-medium text-blue-200 mb-1">
-                  Your Secret Number
-                </label>
-                <input
-                  id="secret"
-                  type="text"
-                  value={userSecret}
-                  onChange={(e) => setUserSecret(e.target.value)}
-                  maxLength={4}
-                  placeholder="Enter your secret 4-digit number"
-                  className="w-full p-3 border-2 border-blue-500/30 rounded-lg bg-blue-950/30 text-white placeholder-blue-300/50 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all outline-none"
-                />
-              </div>
+              {opponent !== 'practice' ? (
+                <div>
+                  <label htmlFor="secret" className="block text-sm font-medium text-blue-200 mb-1">
+                    Your Secret Number
+                  </label>
+                  <input
+                    id="secret"
+                    type="text"
+                    value={userSecret}
+                    onChange={(e) => setUserSecret(e.target.value)}
+                    maxLength={4}
+                    placeholder="Enter your secret 4-digit number"
+                    className="w-full p-3 border-2 border-blue-500/30 rounded-lg bg-blue-950/30 text-white placeholder-blue-300/50 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all outline-none"
+                  />
+                </div>
+              ) : (
+                <p className="text-blue-200 text-center">
+                  Try to guess the computer&apos;s 4-digit number. All digits are different!
+                </p>
+              )}
               <button
                 onClick={startNewGame}
-                disabled={isLoading}
+                disabled={isLoading || (opponent !== 'practice' && (!userSecret || !isValidGuess(userSecret)))}
                 className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
               >
                 {isLoading ? (
@@ -242,7 +255,7 @@ export default function Home() {
                     Starting Game...
                   </span>
                 ) : (
-                  'Start New Game'
+                  opponent === 'practice' ? 'Start Practice' : 'Start New Game'
                 )}
               </button>
             </div>
@@ -251,25 +264,28 @@ export default function Home() {
           <div className="space-y-8">
             <GameBoard
               onMakeGuess={makeGuess}
-              isUserTurn={game.current_turn === 'user'}
+              isUserTurn={true}
               gameStatus={game.game_status}
               winner={winner}
               aiSecret={winner === 'user' ? undefined : game.ai_secret}
               onNewGame={resetGame}
-              userSecret={userSecret}
+              userSecret={opponent === 'practice' ? game.ai_secret : userSecret}
+              isPracticeMode={opponent === 'practice'}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={opponent === 'practice' ? '' : 'grid grid-cols-1 md:grid-cols-2 gap-6'}>
               <GuessHistory 
                 guesses={guesses.filter(g => g.player === 'user')}
                 title="Your Guesses"
-                description="Your attempts to guess AI's number"
+                description="Your attempts to guess the number"
               />
-              <GuessHistory 
-                guesses={guesses.filter(g => g.player === 'ai')}
-                title="AI's Guesses"
-                description="AI&apos;s attempts to guess your number"
-              />
+              {opponent !== 'practice' && (
+                <GuessHistory 
+                  guesses={guesses.filter(g => g.player === 'ai')}
+                  title="AI's Guesses"
+                  description="AI&apos;s attempts to guess your number"
+                />
+              )}
             </div>
           </div>
         )}
