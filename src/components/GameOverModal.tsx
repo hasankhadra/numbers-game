@@ -22,7 +22,7 @@ export default function GameOverModal({ winner, onNewGame, aiSecret }: GameOverM
                 </div>
               </div>
               <h2 className="text-2xl font-bold text-emerald-400 mb-2">Victory!</h2>
-              <p className="text-emerald-200/80">You've cracked the code!</p>
+              <p className="text-emerald-200/80">You&apos;ve cracked the code!</p>
             </div>
           ) : (
             <div className="mb-6 scale-in-center">
@@ -37,7 +37,7 @@ export default function GameOverModal({ winner, onNewGame, aiSecret }: GameOverM
               <p className="text-purple-200/80">The AI has won this round!</p>
               {aiSecret && (
                 <div className="mt-4 p-3 bg-purple-900/20 rounded-lg">
-                  <p className="text-sm text-purple-200/60 mb-2">The AI's number was:</p>
+                  <p className="text-sm text-purple-200/60 mb-2">The AI&apos;s number was:</p>
                   <div className="flex justify-center gap-2">
                     {aiSecret.split('').map((digit, i) => (
                       <span

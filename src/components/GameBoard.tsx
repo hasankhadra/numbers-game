@@ -53,7 +53,7 @@ export default function GameBoard({
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-emerald-400">Victory!</h3>
-                    <p className="text-emerald-200/80">You've cracked the code!</p>
+                    <p className="text-emerald-200/80">You&apos;ve cracked the code!</p>
                   </div>
                 </>
               ) : (
@@ -100,7 +100,7 @@ export default function GameBoard({
             </div>
             {winner === 'ai' && aiSecret && (
               <div className="flex items-center ml-auto gap-2">
-                <span className="text-sm text-purple-300">AI's Number:</span>
+                <span className="text-sm text-purple-300">AI&apos;s Number:</span>
                 <div className="flex gap-1">
                   {aiSecret.split('').map((digit, i) => (
                     <span
