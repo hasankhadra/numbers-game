@@ -118,7 +118,7 @@ export default function GameBoard({
         </div>
       ) : (
         <>
-          {!gameStatus === 'completed' && !isPracticeMode && (
+          {!(gameStatus === 'completed') && !isPracticeMode && (
             <div 
               className={`text-center p-3 rounded-lg mb-2 transition-all duration-300 ${
                 isUserTurn 
