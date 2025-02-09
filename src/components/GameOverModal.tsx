@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 
 interface GameOverModalProps {
   winner: 'user' | 'ai';
@@ -9,14 +8,6 @@ interface GameOverModalProps {
 }
 
 export default function GameOverModal({ winner, onNewGame, aiSecret }: GameOverModalProps) {
-  // Remove if not needed
-  // useEffect(() => {
-  //   document.body.style.overflow = 'hidden';
-  //   return () => {
-  //     document.body.style.overflow = 'unset';
-  //   };
-  // }, []);
-
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
       <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-700">
