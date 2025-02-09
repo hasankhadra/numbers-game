@@ -94,9 +94,7 @@ export default function Home() {
   const makeGuess = async (guessNumber: string) => {
     if (!game || game.current_turn !== 'user') return;
 
-    // Update turn immediately for better UX
-    setGame(prev => prev ? { ...prev, current_turn: 'ai' } : null);
-
+    // Evaluate user's guess
     const { exactMatches, partialMatches } = evaluateGuess(guessNumber, game.ai_secret);
 
     // Save user's guess
@@ -116,8 +114,6 @@ export default function Home() {
 
     if (guessError) {
       console.error('Error saving guess:', guessError);
-      // Revert turn if there was an error
-      setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
       return;
     }
 
@@ -134,10 +130,15 @@ export default function Home() {
       return;
     }
 
-    // AI's turn
-    const aiGuess = await makeAIGuess();
+    // Skip AI turn in practice mode
+    if (opponent === 'practice') {
+      // Set turn back to user immediately
+      setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
+      return;
+    }
 
-    // Evaluate AI's guess
+    // AI's turn (only for non-practice modes)
+    const aiGuess = await makeAIGuess();
     const aiGuessResult = evaluateGuess(aiGuess, game.user_secret);
 
     // Save AI's guess
