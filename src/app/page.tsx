@@ -179,7 +179,7 @@ export default function Home() {
         </h1>
         <p className="text-center text-blue-200 mb-4">
           Each player chooses a secret 4-digit number (all digits must be different).
-          Take turns guessing each other's number. After each guess, you'll learn:
+          Take turns guessing each other&apos;s number. After each guess, you&apos;ll learn:
         </p>
         <div className="text-center text-blue-200 mb-8 space-y-1">
           <p>• How many digits are in the correct position (Exact matches)</p>
@@ -268,7 +268,7 @@ export default function Home() {
               <GuessHistory 
                 guesses={guesses.filter(g => g.player === 'ai')}
                 title="AI's Guesses"
-                description="AI's attempts to guess your number"
+                description="AI&apos;s attempts to guess your number"
               />
             </div>
           </div>

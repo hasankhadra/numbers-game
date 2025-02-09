@@ -9,12 +9,13 @@ interface GameOverModalProps {
 }
 
 export default function GameOverModal({ winner, onNewGame, aiSecret }: GameOverModalProps) {
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
+  // Remove if not needed
+  // useEffect(() => {
+  //   document.body.style.overflow = 'hidden';
+  //   return () => {
+  //     document.body.style.overflow = 'unset';
+  //   };
+  // }, []);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
