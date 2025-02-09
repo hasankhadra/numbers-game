@@ -18,29 +18,25 @@ export function evaluateGuess(guess: string, secret: string): {
   let exactMatches = 0;
   let partialMatches = 0;
   
-  const secretArray = secret.split('');
-  const guessArray = guess.split('');
-  
-  // Check for exact matches
+  // First count exact matches
   for (let i = 0; i < 4; i++) {
-    if (guessArray[i] === secretArray[i]) {
+    if (guess[i] === secret[i]) {
       exactMatches++;
-      secretArray[i] = 'X';
-      guessArray[i] = 'Y';
     }
   }
   
-  // Check for partial matches
+  // Then count partial matches
+  const guessDigits = guess.split('');
+  const secretDigits = secret.split('');
+  
   for (let i = 0; i < 4; i++) {
-    if (guessArray[i] !== 'Y') {
-      const index = secretArray.indexOf(guessArray[i]);
-      if (index !== -1) {
+    if (secretDigits.includes(guessDigits[i])) {
+      if (guess[i] !== secret[i]) { // Only count if not already counted as exact match
         partialMatches++;
-        secretArray[index] = 'X';
       }
     }
   }
-  
+
   return { exactMatches, partialMatches };
 }
 
