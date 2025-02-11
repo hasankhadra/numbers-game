@@ -6,6 +6,7 @@ import { makeGuess } from '@/services/multiplayerService';
 import NumberInput from './NumberInput';
 import GuessHistory from './GuessHistory';
 import { MultiplayerGameOver } from './MultiplayerGameOver';
+import { Toast } from './Toast';
 
 interface MultiplayerGameBoardProps {
   gameId: string;
@@ -21,6 +22,7 @@ interface Winner {
 export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: MultiplayerGameBoardProps) {
   const { game, guesses, opponent, isMyTurn } = useMultiplayerGame({ gameId, playerId });
   const [error, setError] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   const handleGuess = async (guess: string) => {
     if (!game || !isMyTurn) return;
@@ -33,6 +35,12 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
       setError('Failed to submit guess. Please try again.');
       console.error(err);
     }
+  };
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(`${window.location.origin}/multiplayer/${gameId}`);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   if (!game) return null;
@@ -58,7 +66,7 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
               {gameId}
             </div>
             <button
-              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/multiplayer/${gameId}`)}
+              onClick={handleCopyLink}
               className="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-all"
             >
               Copy Game ID
@@ -142,6 +150,12 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
           }}
           game={game}
           onNewGame={onNewGame}
+        />
+      )}
+      {showToast && (
+        <Toast 
+          message="Link copied to clipboard!" 
+          onClose={() => setShowToast(false)} 
         />
       )}
     </div>
