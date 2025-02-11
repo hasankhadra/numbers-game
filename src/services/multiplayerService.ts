@@ -29,7 +29,19 @@ export async function createGame(player1Id: string, player1Secret: string) {
 }
 
 export async function joinGame(gameId: string, player2Id: string, player2Secret: string) {
-  const { data: game, error } = await supabase
+  // First check if game exists and is waiting
+  const { data: game } = await supabase
+    .from('multiplayer_games')
+    .select('*, player1:player1_id(*), player2:player2_id(*)')
+    .eq('id', gameId)
+    .single();
+
+  if (!game || game.game_status !== 'waiting') {
+    throw new Error('Game not found or already started');
+  }
+
+  // Update the game with player2 info
+  const { data: updatedGame, error } = await supabase
     .from('multiplayer_games')
     .update({
       player2_id: player2Id,
@@ -37,12 +49,11 @@ export async function joinGame(gameId: string, player2Id: string, player2Secret:
       game_status: 'active'
     })
     .eq('id', gameId)
-    .eq('game_status', 'waiting')
-    .select()
+    .select('*, player1:player1_id(*), player2:player2_id(*)')
     .single();
 
   if (error) throw error;
-  return game;
+  return updatedGame;
 }
 
 export async function makeGuess(

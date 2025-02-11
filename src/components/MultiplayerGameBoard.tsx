@@ -13,6 +13,11 @@ interface MultiplayerGameBoardProps {
   onNewGame: () => void;
 }
 
+interface Winner {
+  playerId: string | undefined;
+  name?: string | null;
+}
+
 export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: MultiplayerGameBoardProps) {
   const { game, guesses, opponent, isMyTurn } = useMultiplayerGame({ gameId, playerId });
   const [error, setError] = useState('');
@@ -39,8 +44,8 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
 
   const winner = isCompleted ? {
     playerId: myGuesses.some(g => g.exact_matches === 4) ? playerId : opponent?.id,
-    name: myGuesses.some(g => g.exact_matches === 4) ? 'You' : opponent?.name
-  } : null;
+    name: myGuesses.some(g => g.exact_matches === 4) ? null : opponent?.name || 'Opponent'
+  } as Winner : null;
 
   return (
     <div className="space-y-8">
@@ -131,8 +136,11 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
           myPlayerId={playerId}
           playerSecrets={{
             player1Secret: game.player1_secret,
-            player2Secret: game.player2_secret
+            player2Secret: game.player2_secret,
+            player1Name: game.player1?.name,
+            player2Name: game.player2?.name
           }}
+          game={game}
           onNewGame={onNewGame}
         />
       )}

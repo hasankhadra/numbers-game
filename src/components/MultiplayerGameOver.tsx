@@ -1,21 +1,32 @@
 'use client';
 
+import { MultiplayerGame } from "@/types/multiplayer";
+
+interface Winner {
+  playerId: string | undefined;  // Allow undefined
+  name?: string | null;  // Allow null
+}
+
 interface MultiplayerGameOverProps {
-  winner: {
-    playerId: string;
-    name?: string;
-  };
+  winner: Winner;
   myPlayerId: string;
   playerSecrets: {
     player1Secret: string;
     player2Secret: string;
+    player1Name?: string | null;
+    player2Name?: string | null;
   };
+  game: MultiplayerGame;
   onNewGame: () => void;
 }
 
-export function MultiplayerGameOver({ winner, myPlayerId, playerSecrets, onNewGame }: MultiplayerGameOverProps) {
+export function MultiplayerGameOver({ winner, myPlayerId, playerSecrets, game, onNewGame }: MultiplayerGameOverProps) {
   const didIWin = winner.playerId === myPlayerId;
-  const { player1Secret, player2Secret} = playerSecrets;
+  const { player1Secret, player2Secret, player1Name, player2Name } = playerSecrets;
+  
+  const mySecret = myPlayerId === game.player1_id ? player1Secret : player2Secret;
+  const opponentSecret = myPlayerId === game.player1_id ? player2Secret : player1Secret;
+  const opponentName = myPlayerId === game.player1_id ? player2Name : player1Name;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
@@ -46,7 +57,7 @@ export function MultiplayerGameOver({ winner, myPlayerId, playerSecrets, onNewGa
             <div className="bg-gray-800/50 rounded-lg p-4">
               <p className="text-sm text-gray-400 mb-2">Your Number</p>
               <div className="flex gap-2 justify-center">
-                {(myPlayerId === winner.playerId ? player1Secret : player2Secret).split('').map((digit, i) => (
+                {mySecret.split('').map((digit, i) => (
                   <span
                     key={i}
                     className={`w-8 h-8 rounded flex items-center justify-center text-lg font-mono animate-reveal
@@ -61,10 +72,10 @@ export function MultiplayerGameOver({ winner, myPlayerId, playerSecrets, onNewGa
 
             <div className="bg-gray-800/50 rounded-lg p-4">
               <p className="text-sm text-gray-400 mb-2">
-                {winner.name || 'Opponent'}&apos;s Number
+                {opponentName || 'Opponent'}&apos;s Number
               </p>
               <div className="flex gap-2 justify-center">
-                {(myPlayerId === winner.playerId ? player2Secret : player1Secret).split('').map((digit, i) => (
+                {opponentSecret.split('').map((digit, i) => (
                   <span
                     key={i}
                     className={`w-8 h-8 rounded flex items-center justify-center text-lg font-mono animate-reveal

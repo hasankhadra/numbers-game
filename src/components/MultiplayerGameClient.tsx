@@ -17,15 +17,11 @@ interface MultiplayerGameClientProps {
 }
 
 export default function MultiplayerGameClient({ gameId, isCreator }: MultiplayerGameClientProps) {
-  const [multiplayerState, setMultiplayerState] = useState<MultiplayerState | null>(
-    // If creator, initialize with the state from URL
-    isCreator ? { gameId, playerId: sessionStorage.getItem('playerId') || '' } : null
-  );
+  const [multiplayerState, setMultiplayerState] = useState<MultiplayerState | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (isCreator) {
-      // Store playerId in session storage when creating game
+    if (isCreator && typeof window !== 'undefined') {
       const playerId = sessionStorage.getItem('playerId');
       if (playerId) {
         setMultiplayerState({ gameId, playerId });
@@ -34,7 +30,9 @@ export default function MultiplayerGameClient({ gameId, isCreator }: Multiplayer
   }, [isCreator, gameId]);
 
   const handleGameStart = (gameId: string, playerId: string) => {
-    sessionStorage.setItem('playerId', playerId);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('playerId', playerId);
+    }
     setMultiplayerState({ gameId, playerId });
   };
 
