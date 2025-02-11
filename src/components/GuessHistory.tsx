@@ -1,18 +1,19 @@
-interface Guess {
+interface BaseGuess {
   id: string;
   number: string;
   exact_matches: number;
   partial_matches: number;
-  player: 'user' | 'ai';
+  player: string;
 }
 
 interface GuessHistoryProps {
-  guesses: Guess[];
+  guesses: BaseGuess[];
   title: string;
   description: string;
+  type?: 'multiplayer' | 'ai';
 }
 
-export default function GuessHistory({ guesses, title, description }: GuessHistoryProps) {
+export default function GuessHistory({ guesses, title, description, type = 'ai' }: GuessHistoryProps) {
   return (
     <div className="game-card w-full p-6 rounded-xl">
       <div className="flex items-center justify-between mb-2 border-b border-blue-800 pb-2">
@@ -27,9 +28,11 @@ export default function GuessHistory({ guesses, title, description }: GuessHisto
           <div
             key={guess.id}
             className={`p-4 rounded-lg transition-all hover:shadow-md transform hover:-translate-y-1 ${
-              guess.player === 'user' 
-                ? 'bg-blue-900 bg-opacity-40 border-l-4 border-blue-500' 
-                : 'bg-purple-900 bg-opacity-40 border-l-4 border-purple-500'
+              type === 'multiplayer' 
+                ? 'bg-blue-900 bg-opacity-40 border-l-4 border-blue-500'
+                : guess.player === 'user'
+                  ? 'bg-blue-900 bg-opacity-40 border-l-4 border-blue-500' 
+                  : 'bg-purple-900 bg-opacity-40 border-l-4 border-purple-500'
             }`}
             style={{
               animation: `slideIn 0.3s ease-out ${index * 0.1}s both`

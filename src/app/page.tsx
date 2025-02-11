@@ -10,20 +10,48 @@ import GameLayout from '../components/GameLayout';
 import { generateSecretNumber, evaluateGuess, isValidGuess } from '../utils/gameLogic';
 import { Game, Guess } from '../types/database';
 import { generateNextGuess } from '../utils/bruteForceGuesser';
+import { MultiplayerSetup } from '@/components/MultiplayerSetup';
+import { MultiplayerGameBoard } from '@/components/MultiplayerGameBoard';
+import { useRouter } from 'next/navigation';
 
 type GameMode = 'ai' | 'computer' | 'practice' | 'multiplayer';
 
+interface MultiplayerState {
+  gameId: string;
+  playerId: string;
+}
+
 export default function Home() {
+  const [gameMode, setGameMode] = useState<GameMode | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [userSecret, setUserSecret] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [winner, setWinner] = useState<'user' | 'ai' | null>(null);
-  const [gameMode, setGameMode] = useState<GameMode | null>(null);
+  const [multiplayerState, setMultiplayerState] = useState<MultiplayerState | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     console.log(game);
   }, [game])
+
+  const handleGameModeSelect = (mode: GameMode) => {
+    setGameMode(mode);
+    // Reset states when changing mode
+    setGame(null);
+    setGuesses([]);
+    setUserSecret('');
+    setWinner(null);
+    setMultiplayerState(null);
+  };
+
+  const handleMultiplayerStart = async (gameId: string, playerId: string) => {
+    if (gameMode === 'multiplayer') {
+      // Set the state before navigation to preserve the game creator's session
+      setMultiplayerState({ gameId, playerId });
+      router.push(`/multiplayer/${gameId}?creator=true`);
+    }
+  };
 
   const startNewGame = async () => {
     if (gameMode !== 'practice' && (!userSecret || !isValidGuess(userSecret))) {
@@ -61,12 +89,13 @@ export default function Home() {
   };
 
   const resetGame = () => {
-    setWinner(null);
+    setGameMode(null);
     setGame(null);
     setGuesses([]);
     setUserSecret('');
+    setWinner(null);
+    setMultiplayerState(null);
     setIsLoading(false);
-    setGameMode(null);
   };
 
   const makeAIGuess = async () => {
@@ -184,7 +213,17 @@ export default function Home() {
   return (
     <GameLayout>
       {!gameMode ? (
-        <GameModeSelector onSelectMode={setGameMode} />
+        <GameModeSelector onSelectMode={handleGameModeSelect} />
+      ) : gameMode === 'multiplayer' ? (
+        !multiplayerState ? (
+          <MultiplayerSetup onGameStart={handleMultiplayerStart} />
+        ) : (
+          <MultiplayerGameBoard
+            gameId={multiplayerState.gameId}
+            playerId={multiplayerState.playerId}
+            onNewGame={resetGame}
+          />
+        )
       ) : !game ? (
         <GameSetup 
           isPracticeMode={gameMode === 'practice'}
@@ -198,7 +237,7 @@ export default function Home() {
         <div className="space-y-8">
           <GameBoard
             onMakeGuess={makeGuess}
-            isUserTurn={true}
+            isUserTurn={game.current_turn === 'user'}
             gameStatus={game.game_status}
             winner={winner}
             aiSecret={winner === 'user' ? undefined : game.ai_secret}

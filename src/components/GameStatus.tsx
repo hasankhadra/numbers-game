@@ -27,7 +27,7 @@ export default function GameStatus({ winner, onNewGame, aiSecret }: GameStatusPr
                 </div>
                 <div>
                   <h3 className="font-bold text-emerald-400">Victory!</h3>
-                  <p className="text-sm text-emerald-200/80">You've cracked the code!</p>
+                  <p className="text-sm text-emerald-200/80">You&apos;ve cracked the code!</p>
                 </div>
               </>
             ) : (
@@ -59,7 +59,7 @@ export default function GameStatus({ winner, onNewGame, aiSecret }: GameStatusPr
         </div>
         {winner === 'ai' && aiSecret && (
           <div className="mt-4 pt-4 border-t border-purple-500/20">
-            <p className="text-sm text-purple-200/60 mb-2">The AI's number was:</p>
+            <p className="text-sm text-purple-200/60 mb-2">The AI&apos;s number was:</p>
             <div className="flex gap-2">
               {aiSecret.split('').map((digit, i) => (
                 <span
