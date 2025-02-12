@@ -48,7 +48,7 @@ export function generateNextGuess(previousGuesses: GuessResult[]): string {
   const validGuesses: string[] = [];
   
   // Collect all valid possible guesses
-  for (let i = 100; i <= 9876; i++) {
+  for (let i = 123; i <= 9876; i++) {
     const numStr = i.toString().padStart(4, '0');
     
     // Skip if not valid or already used
