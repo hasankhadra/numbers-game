@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface NumberInputProps {
   onComplete: (value: string) => void;
@@ -77,7 +77,6 @@ export default function NumberInput({ onComplete, disabled = false, showSubmit =
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
-              disabled={disabled}
               className={`w-14 h-14 text-center text-2xl font-mono border-2 rounded-lg 
                 ${disabled 
                   ? 'bg-gray-900/50 border-gray-700 text-gray-500' 

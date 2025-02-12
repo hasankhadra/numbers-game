@@ -55,6 +55,8 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
     name: myGuesses.some(g => g.exact_matches === 4) ? null : opponent?.name || 'Opponent'
   } as Winner : null;
 
+  const mySecret = game ? (game.player1_id === playerId ? game.player1_secret : game.player2_secret) : null;
+
   return (
     <div className="space-y-8">
       <div className="game-card w-full max-w-md mx-auto p-6 rounded-xl shadow-lg">
@@ -105,6 +107,22 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
                 </div>
               )}
             </div>
+
+            {!isWaiting && (
+              <div className="flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-blue-900/20 border border-blue-500/10">
+                <span className="text-sm text-blue-300">Your Number:</span>
+                <div className="flex gap-1">
+                  {mySecret?.split('').map((digit, i) => (
+                    <span
+                      key={i}
+                      className="w-6 h-6 flex items-center justify-center text-sm font-mono font-medium bg-blue-900/30 rounded text-blue-200"
+                    >
+                      {digit}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {!isCompleted && (
               <div className="space-y-4">
