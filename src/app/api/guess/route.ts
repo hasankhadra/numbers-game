@@ -96,6 +96,7 @@ export async function POST(request: Request) {
       });
     }
   } catch (error) {
+    console.error('Error processing guess:', error);
     return NextResponse.json({ error: 'Failed to process guess' }, { status: 500 });
   }
 } 

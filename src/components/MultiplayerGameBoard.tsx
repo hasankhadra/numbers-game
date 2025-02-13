@@ -86,6 +86,8 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
 
   if (!game) return null;
 
+  console.log({game, winner, gameOverDetails})
+
   return (
     <div className="space-y-8">
       <div className="game-card w-full max-w-md mx-auto p-6 rounded-xl shadow-lg">
@@ -186,7 +188,7 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
         </div>
       )}
 
-      {isCompleted && winner && gameOverDetails && (
+      {winner && gameOverDetails && (
         <MultiplayerGameOver
           winner={winner}
           myPlayerId={playerId}

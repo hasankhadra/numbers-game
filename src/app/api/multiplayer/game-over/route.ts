@@ -1,3 +1,4 @@
+import { MultiplayerPlayer } from '@/types/multiplayer';
 import { supabase } from '../../../../lib/supabase-admin';
 import { NextResponse } from 'next/server';
 
@@ -32,13 +33,13 @@ export async function GET(request: Request) {
     return NextResponse.json({
       winner: {
         id: game.winner_id,
-        name: game.winner_id === game.player1.id ? game.player1.name : game.player2.name
+        name: game.winner_id === (game.player1 as unknown as MultiplayerPlayer).id ? (game.player1 as unknown as MultiplayerPlayer).name : (game.player2 as unknown as MultiplayerPlayer).name
       },
       playerSecrets: {
         player1Secret: game.player1_secret,
         player2Secret: game.player2_secret,
-        player1Name: game.player1.name,
-        player2Name: game.player2.name
+        player1Name: (game.player1 as unknown as MultiplayerPlayer).name,
+        player2Name: (game.player2 as unknown as MultiplayerPlayer).name
       }
     });
   } catch (error) {
