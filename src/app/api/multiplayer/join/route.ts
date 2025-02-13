@@ -1,0 +1,27 @@
+import { supabase } from '../../../../lib/supabase-admin';
+import { NextResponse } from 'next/server';
+
+export async function POST(request: Request) {
+  try {
+    const { gameId, playerId, playerSecret } = await request.json();
+
+    const { data: gameData, error: gameError } = await supabase
+      .from('multiplayer_games')
+      .update({
+        player2_id: playerId,
+        player2_secret: playerSecret,
+        game_status: 'active',
+      })
+      .eq('id', gameId)
+      .eq('game_status', 'waiting')
+      .select('id, game_status, created_at')
+      .single();
+
+    if (gameError) throw gameError;
+
+    return NextResponse.json({ game: gameData });
+  } catch (error) {
+    console.error('Error joining game:', error);
+    return NextResponse.json({ error: 'Failed to join game' }, { status: 500 });
+  }
+} 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createGame, createPlayer, joinGame } from '@/services/multiplayerService';
+import { createPlayer } from '@/services/multiplayerService';
 import { isValidGuess } from '@/utils/gameLogic';
 import { MultiplayerGame } from '@/types/multiplayer';
 
@@ -32,10 +32,8 @@ export function MultiplayerSetup({ onGameStart, initialGameId, isJoining }: Mult
     try {
       const sessionId = Math.random().toString(36).substring(7);
       const player = await createPlayer(sessionId, playerName);
-      const game = await createGame(player.id, secretNumber);
-      setGame(game);
       sessionStorage.setItem('playerId', player.id);
-      onGameStart(game.id, player.id);
+      await createGame(player.id, secretNumber);
     } catch (err) {
       setError('Failed to create game. Please try again.');
       console.error(err);
@@ -56,9 +54,7 @@ export function MultiplayerSetup({ onGameStart, initialGameId, isJoining }: Mult
     try {
       const sessionId = Math.random().toString(36).substring(7);
       const player = await createPlayer(sessionId, playerName);
-      const game = await joinGame(gameId, player.id, secretNumber);
-      setGame(game);
-      onGameStart(game.id, player.id);
+      await joinGame(gameId, player.id, secretNumber);
     } catch (err) {
       setError('Failed to join game. Please check the game ID and try again.');
       console.error(err);
@@ -100,6 +96,42 @@ export function MultiplayerSetup({ onGameStart, initialGameId, isJoining }: Mult
       </div>
     </div>
   );
+
+  const createGame = async (playerId: string, secret: string) => {
+    try {
+      const response = await fetch('/api/multiplayer/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, playerSecret: secret }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+      
+      setGame(data.game);
+      onGameStart(data.game.id, playerId);
+    } catch (error) {
+      console.error('Error creating game:', error);
+    }
+  };
+
+  const joinGame = async (gameId: string, playerId: string, secret: string) => {
+    try {
+      const response = await fetch('/api/multiplayer/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, playerId, playerSecret: secret }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+
+      setGame(data.game);
+      onGameStart(data.game.id, playerId);
+    } catch (error) {
+      console.error('Error joining game:', error);
+    }
+  };
 
   if (isLoading) {
     return (

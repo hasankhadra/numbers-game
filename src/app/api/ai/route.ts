@@ -3,7 +3,7 @@ import { OpenAIResponse, GuessHistory } from '@/types/openai';
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-function validateGuessAgainstHistory(guess: string, previousGuesses: any[]) {
+function validateGuessAgainstHistory(guess: string, previousGuesses: GuessHistory[]) {
   for (const prevGuess of previousGuesses) {
     let exactMatches = 0;
     let partialMatches = 0;

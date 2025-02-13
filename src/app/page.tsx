@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState } from 'react';
 import GameBoard from '../components/GameBoard';
 import GuessHistory from '../components/GuessHistory';
 import GameModeSelector from '../components/GameModeSelector';
 import GameSetup from '../components/GameSetup';
 import GameLayout from '../components/GameLayout';
-import { generateSecretNumber, evaluateGuess, isValidGuess } from '../utils/gameLogic';
+import { isValidGuess } from '../utils/gameLogic';
 import { Game, Guess } from '../types/database';
-import { generateNextGuess } from '../utils/bruteForceGuesser';
 import { MultiplayerSetup } from '@/components/MultiplayerSetup';
 import { MultiplayerGameBoard } from '@/components/MultiplayerGameBoard';
 import { useRouter } from 'next/navigation';
@@ -30,10 +28,6 @@ export default function Home() {
   const [winner, setWinner] = useState<'user' | 'ai' | null>(null);
   const [multiplayerState, setMultiplayerState] = useState<MultiplayerState | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    console.log(game);
-  }, [game])
 
   const handleGameModeSelect = (mode: GameMode) => {
     setGameMode(mode);
@@ -60,31 +54,20 @@ export default function Home() {
     }
 
     setIsLoading(true);
-    const aiSecret = generateSecretNumber();
-    const userId = Math.random().toString(36).substring(7);
-
-    const { data: gameData, error: gameError } = await supabase
-      .from('games')
-      .insert([
-        {
-          user_id: userId,
-          user_secret: '0000', // Dummy number since we don't need it for practice mode
-          ai_secret: aiSecret,
-          current_turn: 'user',
-        },
-      ])
-      .select()
-      .single();
-
-    if (gameError) {
-      console.error('Error creating game:', gameError);
-      setIsLoading(false);
-      return;
+    try {
+      const response = await fetch('/api/game', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+      
+      setGame(data.game);
+      setGuesses([]);
+      setWinner(null);
+    } catch (error) {
+      console.error('Error creating game:', error);
     }
-
-    setGame(gameData);
-    setGuesses([]);
-    setWinner(null);
     setIsLoading(false);
   };
 
@@ -98,115 +81,63 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  const makeAIGuess = async () => {
-    if (gameMode === 'ai') {
-      const response = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          previousGuesses: guesses.filter(g => g.player === 'ai').map(g => ({
-            number: g.number,
-            exact_matches: g.exact_matches,
-            partial_matches: g.partial_matches
-          }))
-        }),
-      });
-
-      const aiResponse = await response.json();
-      return aiResponse.choices[0].message.content.trim();
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return generateNextGuess(
-        guesses.filter(g => g.player === 'ai')
-      );
-    }
-  };
-
   const makeGuess = async (guessNumber: string) => {
     if (!game || game.current_turn !== 'user') return;
 
-    // Evaluate user's guess
-    const { exactMatches, partialMatches } = evaluateGuess(guessNumber, game.ai_secret);
+    try {
+      // Make user's guess
+      const response = await fetch('/api/guess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId: game.id,
+          guessNumber,
+          userSecret,
+          isAIGuess: false
+        }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
 
-    // Save user's guess
-    const { data: guessData, error: guessError } = await supabase
-      .from('guesses')
-      .insert([
-        {
-          game_id: game.id,
-          number: guessNumber,
-          exact_matches: exactMatches,
-          partial_matches: partialMatches,
-          player: 'user',
-        },
-      ])
-      .select()
-      .single();
+      setGuesses(prev => [...prev, data.guess]);
+      
+      if (data.gameStatus === 'completed') {
+        setGame(prev => prev ? { ...prev, game_status: 'completed' } : null);
+        setWinner(data.winner);
+        return;
+      }
 
-    if (guessError) {
-      console.error('Error saving guess:', guessError);
-      return;
-    }
+      // Skip AI turn in practice mode
+      if (gameMode === 'practice') {
+        setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
+        return;
+      }
 
-    setGuesses((prev) => [...prev, guessData]);
+      // Make AI's guess
+      const aiResponse = await fetch('/api/guess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId: game.id,
+          userSecret,
+          isAIGuess: true
+        }),
+      });
+      const aiData = await aiResponse.json();
+      
+      if (!aiResponse.ok) throw new Error(aiData.error);
 
-    // Check if user won
-    if (exactMatches === 4) {
-      await supabase
-        .from('games')
-        .update({ game_status: 'completed' })
-        .eq('id', game.id);
-      setGame({ ...game, game_status: 'completed' });
-      setWinner('user');
-      return;
-    }
-
-    // Skip AI turn in practice mode
-    if (gameMode === 'practice') {
-      // Set turn back to user immediately
-      setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
-      return;
-    }
-
-    // AI's turn (only for non-practice modes)
-    const aiGuess = await makeAIGuess();
-    
-    // Make sure we're using the correct user secret for evaluation
-    const aiGuessResult = evaluateGuess(aiGuess, userSecret);
-
-    // Log for debugging
-    console.log('AI Guess:', aiGuess);
-    console.log('User Secret:', userSecret);
-    console.log('Result:', aiGuessResult);
-
-    // Save AI's guess
-    const { data: aiGuessData } = await supabase
-      .from('guesses')
-      .insert([
-        {
-          game_id: game.id,
-          number: aiGuess,
-          exact_matches: aiGuessResult.exactMatches,
-          partial_matches: aiGuessResult.partialMatches,
-          player: 'ai',
-        },
-      ])
-      .select()
-      .single();
-
-    setGuesses((prev) => [...prev, aiGuessData]);
-
-    // Check if AI won
-    if (aiGuessResult.exactMatches === 4) {
-      await supabase
-        .from('games')
-        .update({ game_status: 'completed' })
-        .eq('id', game.id);
-      setGame({ ...game, game_status: 'completed' });
-      setWinner('ai');
-    } else {
-      // Set turn back to user if game continues
-      setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
+      setGuesses(prev => [...prev, aiData.guess]);
+      
+      if (aiData.gameStatus === 'completed') {
+        setGame(prev => prev ? { ...prev, game_status: 'completed' } : null);
+        setWinner(aiData.winner);
+      } else {
+        setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
+      }
+    } catch (error) {
+      console.error('Error making guess:', error);
     }
   };
 
@@ -257,6 +188,7 @@ export default function Home() {
                 guesses={guesses.filter(g => g.player === 'ai')}
                 title="AI's Guesses"
                 description="AI&apos;s attempts to guess your number"
+                isOpponentHistory={true}
               />
             )}
           </div>

@@ -24,9 +24,9 @@ export function MultiplayerGameOver({ winner, myPlayerId, playerSecrets, game, o
   const didIWin = winner.playerId === myPlayerId;
   const { player1Secret, player2Secret, player1Name, player2Name } = playerSecrets;
   
-  const mySecret = myPlayerId === game.player1_id ? player1Secret : player2Secret;
-  const opponentSecret = myPlayerId === game.player1_id ? player2Secret : player1Secret;
-  const opponentName = myPlayerId === game.player1_id ? player2Name : player1Name;
+  const mySecret = myPlayerId === game.player1.id ? player1Secret : player2Secret;
+  const opponentSecret = myPlayerId === game.player1.id ? player2Secret : player1Secret;
+  const opponentName = myPlayerId === game.player1.id ? player2Name : player1Name;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">

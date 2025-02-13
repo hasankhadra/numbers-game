@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
-import { makeGuess } from '@/services/multiplayerService';
 import NumberInput from './NumberInput';
 import GuessHistory from './GuessHistory';
 import { MultiplayerGameOver } from './MultiplayerGameOver';
@@ -20,20 +19,36 @@ interface Winner {
 }
 
 export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: MultiplayerGameBoardProps) {
-  const { game, guesses, opponent, isMyTurn } = useMultiplayerGame({ gameId, playerId });
+  const { game, guesses, opponent, isMyTurn, mySecret } = useMultiplayerGame({ gameId, playerId });
   const [error, setError] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [winner, setWinner] = useState<Winner | null>(null);
+  const [gameOverDetails, setGameOverDetails] = useState<{
+    player1Secret: string;
+    player2Secret: string;
+    player1Name: string | null;
+    player2Name: string | null;
+  } | null>(null);
 
   const handleGuess = async (guess: string) => {
     if (!game || !isMyTurn) return;
 
     try {
       setError('');
-      const opponentSecret = game.player1_id === playerId ? game.player2_secret : game.player1_secret;
-      await makeGuess(gameId, playerId, guess, opponentSecret);
-    } catch (err) {
-      setError('Failed to submit guess. Please try again.');
-      console.error(err);
+      const response = await fetch('/api/multiplayer/guess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, playerId, guess }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+      
+      if (data.gameStatus === 'completed') {
+        setWinner(data.winner);
+      }
+    } catch (error) {
+      console.error('Error making guess:', error);
     }
   };
 
@@ -43,19 +58,33 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  if (!game) return null;
-
-  const isWaiting = game.game_status === 'waiting';
-  const isCompleted = game.game_status === 'completed';
+  const isWaiting = game?.game_status === 'waiting';
+  const isCompleted = game?.game_status === 'completed';
   const myGuesses = guesses.filter(g => g.player_id === playerId);
   const opponentGuesses = guesses.filter(g => g.player_id !== playerId);
 
-  const winner = isCompleted ? {
-    playerId: myGuesses.some(g => g.exact_matches === 4) ? playerId : opponent?.id,
-    name: myGuesses.some(g => g.exact_matches === 4) ? null : opponent?.name || 'Opponent'
-  } as Winner : null;
+  useEffect(() => {
+    if (!winner) {
+      // Fetch final game details
+      const fetchGameOver = async () => {
+        try {
+          const response = await fetch(`/api/multiplayer/game-over?gameId=${gameId}`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            setWinner(data.winner);
+            setGameOverDetails(data.playerSecrets);
+          }
+        } catch (error) {
+          console.error('Error fetching game over details:', error);
+        }
+      };
+      
+      fetchGameOver();
+    }
+  }, [isCompleted, winner, gameId]);
 
-  const mySecret = game ? (game.player1_id === playerId ? game.player1_secret : game.player2_secret) : null;
+  if (!game) return null;
 
   return (
     <div className="space-y-8">
@@ -152,20 +181,16 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
             guesses={opponentGuesses}
             title={`${opponent?.name || 'Opponent'}'s Guesses`}
             description="Opponent's attempts to guess your number"
+            isOpponentHistory={true}
           />
         </div>
       )}
 
-      {isCompleted && winner && (
+      {isCompleted && winner && gameOverDetails && (
         <MultiplayerGameOver
           winner={winner}
           myPlayerId={playerId}
-          playerSecrets={{
-            player1Secret: game.player1_secret,
-            player2Secret: game.player2_secret,
-            player1Name: game.player1?.name,
-            player2Name: game.player2?.name
-          }}
+          playerSecrets={gameOverDetails}
           game={game}
           onNewGame={onNewGame}
         />
