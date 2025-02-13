@@ -2,17 +2,19 @@ import { supabase } from '../../../lib/supabase-admin';
 import { NextResponse } from 'next/server';
 import { generateSecretNumber } from '@/utils/gameLogic';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const userId = Math.random().toString(36).substring(7);
     const aiSecret = generateSecretNumber();
+
+    const { userSecret } = await request.json();
 
     const { data: gameData, error: gameError } = await supabase
       .from('games')
       .insert([
         {
           user_id: userId,
-          user_secret: '0000',
+          user_secret: userSecret,
           ai_secret: aiSecret,
           current_turn: 'user',
         },

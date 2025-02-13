@@ -45,7 +45,21 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
       if (!response.ok) throw new Error(data.error);
       
       if (data.gameStatus === 'completed') {
-        setWinner(data.winner);
+        const fetchGameOver = async () => {
+          try {
+            const response = await fetch(`/api/multiplayer/game-over?gameId=${gameId}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+              setWinner(data.winner);
+              setGameOverDetails(data.playerSecrets);
+            }
+          } catch (error) {
+            console.error('Error fetching game over details:', error);
+          }
+        };
+        
+        fetchGameOver();
       }
     } catch (error) {
       console.error('Error making guess:', error);
@@ -85,8 +99,6 @@ export function MultiplayerGameBoard({ gameId, playerId, onNewGame }: Multiplaye
   }, [isCompleted, winner, gameId]);
 
   if (!game) return null;
-
-  console.log({game, winner, gameOverDetails})
 
   return (
     <div className="space-y-8">

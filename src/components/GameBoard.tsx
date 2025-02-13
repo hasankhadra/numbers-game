@@ -24,6 +24,7 @@ export default function GameBoard({
   userSecret,
   isPracticeMode
 }: GameBoardProps) {
+
   const [error, setError] = useState('');
 
   const handleComplete = (guess: string) => {
@@ -55,6 +56,7 @@ export default function GameBoard({
                     <h3 className="text-2xl font-bold text-emerald-400">Victory!</h3>
                     <p className="text-emerald-200/80">You&apos;ve cracked the code!</p>
                   </div>
+
                 </>
               ) : (
                 <>
@@ -98,7 +100,7 @@ export default function GameBoard({
                 ))}
               </div>
             </div>
-            {winner === 'ai' && aiSecret && (
+            {winner && aiSecret && (
               <div className="flex items-center ml-auto gap-2">
                 <span className="text-sm text-purple-300">AI&apos;s Number:</span>
                 <div className="flex gap-1">

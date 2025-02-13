@@ -57,7 +57,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         guess: aiGuessData,
         gameStatus,
-        winner: gameStatus === 'completed' ? 'ai' : null
+        winner: gameStatus === 'completed' ? 'ai' : null,
+        aiSecret: gameStatus === 'completed' ? game.ai_secret : null
       });
 
     } else {
@@ -92,7 +93,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         guess: guessData,
         gameStatus,
-        winner: gameStatus === 'completed' ? 'user' : null
+        winner: gameStatus === 'completed' ? 'user' : null,
+        aiSecret: gameStatus === 'completed' ? game.ai_secret : null
       });
     }
   } catch (error) {

@@ -27,6 +27,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [winner, setWinner] = useState<'user' | 'ai' | null>(null);
   const [multiplayerState, setMultiplayerState] = useState<MultiplayerState | null>(null);
+  const [aiSecret, setAiSecret] = useState<string | null>(null);
   const router = useRouter();
 
   const handleGameModeSelect = (mode: GameMode) => {
@@ -57,6 +58,9 @@ export default function Home() {
     try {
       const response = await fetch('/api/game', {
         method: 'POST',
+        body: JSON.stringify({
+          userSecret
+        })
       });
       const data = await response.json();
       
@@ -105,6 +109,7 @@ export default function Home() {
       if (data.gameStatus === 'completed') {
         setGame(prev => prev ? { ...prev, game_status: 'completed' } : null);
         setWinner(data.winner);
+        setAiSecret(data.aiSecret);
         return;
       }
 
@@ -133,6 +138,7 @@ export default function Home() {
       if (aiData.gameStatus === 'completed') {
         setGame(prev => prev ? { ...prev, game_status: 'completed' } : null);
         setWinner(aiData.winner);
+        setAiSecret(aiData.aiSecret);
       } else {
         setGame(prev => prev ? { ...prev, current_turn: 'user' } : null);
       }
@@ -171,7 +177,7 @@ export default function Home() {
             isUserTurn={game.current_turn === 'user'}
             gameStatus={game.game_status}
             winner={winner}
-            aiSecret={winner === 'user' ? undefined : game.ai_secret}
+            aiSecret={winner ? aiSecret! : undefined}
             onNewGame={resetGame}
             userSecret={gameMode === 'practice' ? game.ai_secret : userSecret}
             isPracticeMode={gameMode === 'practice'}

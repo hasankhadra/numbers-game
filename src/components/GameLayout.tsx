@@ -13,7 +13,8 @@ export default function GameLayout({ children }: GameLayoutProps) {
         </h1>
         <p className="text-center text-blue-200 mb-4">
           Each player chooses a secret 4-digit number (all digits must be different).
-          Take turns guessing each other&apos;s number. After each guess, you&apos;ll learn:
+          Take turns guessing each other&apos;s number. The one who guesses the number first wins!
+          After each guess, you&apos;ll learn:
         </p>
         <div className="text-center text-blue-200 mb-8 space-y-1">
           <p>• How many digits are in the correct position (Exact matches)</p>
